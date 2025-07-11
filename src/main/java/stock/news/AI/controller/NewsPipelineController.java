@@ -15,7 +15,7 @@ public class NewsPipelineController {
     private NewsPipelineService newsPipelineService;
 
     @GetMapping("")
-    public void getNews(@RequestParam String ticker) {
-        newsPipelineService.getNews(ticker);
+    public String getNews(@RequestParam String ticker) {
+        return newsPipelineService.getNews(ticker);
     }
 }

@@ -1,11 +1,7 @@
 package stock.news.AI.service;
 
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import stock.news.AI.model.Scraper;
 
 @Service
 public class NewsPipelineService {
@@ -13,9 +9,12 @@ public class NewsPipelineService {
     private ArticleService articleService;
     @Autowired
     private ScraperService scraperService;
+    @Autowired
+    private ChatService chatService;
 
-    public List<Scraper> getNews(String ticker) {
+    public String getNews(String ticker) {
         articleService.getArticles(ticker);
-        return scraperService.scrapeArticleBodies(ticker);
+        scraperService.scrapeArticleBodies(ticker);
+        return chatService.prompt(ticker);
     }
 }

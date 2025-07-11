@@ -43,7 +43,7 @@ public class ArticleService {
 
         // build URL with all required query params
         String url = String.format(
-            "%s?ticker=%s&published_utc.gte=%s&order=desc&limit=2&sort=published_utc&apiKey=%s",
+            "%s?ticker=%s&published_utc.gte=%s&order=desc&limit=5&sort=published_utc&apiKey=%s",
             apiUrl, ticker, publishedUtcGte, apiKey
         );
 
