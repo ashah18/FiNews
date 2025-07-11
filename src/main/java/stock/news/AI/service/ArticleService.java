@@ -8,6 +8,7 @@ import java.util.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -16,6 +17,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import stock.news.AI.model.Article;
+import stock.news.AI.repository.ArticleRepository;
 
 @Service
 public class ArticleService {
@@ -29,14 +31,19 @@ public class ArticleService {
     private ObjectMapper objectMapper;
     @Autowired
     private RestTemplate rest;
+    @Autowired
+    private ArticleRepository articleRepository;
 
     private final String publishedUtcGte = DateTimeFormatter.ISO_INSTANT
             .format(Instant.now().minus(14, ChronoUnit.DAYS));;
 
+    @Transactional
     public List<Article> getArticles(String ticker) {
+        articleRepository.deleteAllByTicker(ticker);
+
         // build URL with all required query params
         String url = String.format(
-            "%s?ticker=%s&published_utc.gte=%s&order=desc&limit=10&sort=published_utc&apiKey=%s",
+            "%s?ticker=%s&published_utc.gte=%s&order=desc&limit=2&sort=published_utc&apiKey=%s",
             apiUrl, ticker, publishedUtcGte, apiKey
         );
 
@@ -49,11 +56,13 @@ public class ArticleService {
                 .path("results");
 
             // 3) convert that array straight into List<Article>
-            return objectMapper.convertValue(
+            List<Article> articles = objectMapper.convertValue(
                 resultsNode,
                 new TypeReference<List<Article>>() {}
             );
 
+            articles.forEach(a -> a.setTicker(ticker));
+            return articleRepository.saveAll(articles);
         } catch (JsonProcessingException e) {
             throw new RuntimeException("Error parsing news response", e);
         }
